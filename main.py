@@ -1,51 +1,51 @@
-# from fastapi import FastAPI, Depends, HTTPException
-# from sqlalchemy.orm import Session
-# from database import engine, SessionLocal
-# import models, schemas, auth
+from fastapi import FastAPI, Depends, HTTPException
+from sqlalchemy.orm import Session
+from database import engine, SessionLocal
+import models, schemas, auth
 
-# models.Base.metadata.create_all(bind=engine)
+models.Base.metadata.create_all(bind=engine)
 
-# app = FastAPI()
+app = FastAPI()
 
-# # Dependency
-# def get_db():
-#     db = SessionLocal()
-#     try:
-#         yield db
-#     finally:
-#         db.close()
+# Dependency
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
-# # ✅ Register API
-# @app.post("/register")
-# def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
-#     existing_user = db.query(models.User).filter(models.User.username == user.username).first()
+# ✅ Register API
+@app.post("/register")
+def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    existing_user = db.query(models.User).filter(models.User.username == user.username).first()
 
-#     if existing_user:
-#         raise HTTPException(status_code=400, detail="User already exists")
+    if existing_user:
+        raise HTTPException(status_code=400, detail="User already exists")
 
-#     hashed_password = auth.hash_password(user.password)
+    hashed_password = auth.hash_password(user.password)
 
-#     new_user = models.User(
-#         username=user.username,
-#         email=user.email,
-#         password=hashed_password
-#     )
+    new_user = models.User(
+        username=user.username,
+        email=user.email,
+        password=hashed_password
+    )
 
-#     db.add(new_user)
-#     db.commit()
-#     # db.refresh(new_user)
+    db.add(new_user)
+    db.commit()
+    # db.refresh(new_user)
 
-#     return {"message": "User created successfully"}
+    return {"message": "User created successfully"}
     
 
-# # ✅ Login API (JWT)
-# @app.post("/login")
-# def login(user: schemas.UserLogin, db: Session = Depends(get_db)):
-#     db_user = db.query(models.User).filter(models.User.username == user.username).first()
+# ✅ Login API (JWT)
+@app.post("/login")
+def login(user: schemas.UserLogin, db: Session = Depends(get_db)):
+    db_user = db.query(models.User).filter(models.User.username == user.username).first()
 
-#     if not db_user or not auth.verify_password(user.password, db_user.password):
-#         raise HTTPException(status_code=401, detail="Invalid credentials")
+    if not db_user or not auth.verify_password(user.password, db_user.password):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
 
-#     token = auth.create_access_token({"sub": db_user.username})
+    token = auth.create_access_token({"sub": db_user.username})
 
-#     return {"access_token": token, "token_type": "bearer"}
+    return {"access_token": token, "token_type": "bearer"}
